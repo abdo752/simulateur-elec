@@ -3,88 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulateur de Maintenance Industrielle</title>
+    <title>Simulateur de Maintenance Industrielle - Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .energized { color: #22c55e; text-shadow: 0 0 8px #22c55e; }
-        .tripped { color: #ef4444; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.3; } }
-        .component-box { transition: all 0.3s; cursor: pointer; }
-        .component-box:hover { background-color: #f3f4f6; }
+        :root {
+            --bg-industrial: #f1f3f5;
+            --panel-bg: #ffffff;
+            --text-primary: #1a202c;
+            --text-secondary: #718096;
+            --border-color: #e2e8f0;
+            --energized-color: #38a169;
+            --warning-color: #dd6b20;
+            --tripped-color: #e53e3e;
+        }
+
+        body {
+            background-color: var(--bg-industrial);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Effet relief boutons */
+        .btn-industrial {
+            transition: all 0.2s ease-in-out;
+            box-shadow: 3px 3px 6px #bebebe, -3px -3px 6px #ffffff;
+        }
+        .btn-industrial:active {
+            box-shadow: inset 2px 2px 5px #bebebe, inset -2px -2px 5px #ffffff;
+            transform: translateY(1px);
+        }
+
+        /* Voyants lumineux */
+        .indicator {
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1), 0 0 15px rgba(255,255,255,0.8);
+            transition: all 0.3s ease;
+        }
+
+        .schematic-zone {
+            background: radial-gradient(circle, #ffffff 0%, #f9fafb 100%);
+            border: 2px solid var(--border-color);
+        }
     </style>
 </head>
-<body class="bg-gray-50 font-sans text-gray-900">
+<body class="p-0 m-0">
 
-    <header class="sticky top-0 z-40 border-b bg-white/95 backdrop-blur px-4 py-4 shadow-sm">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">⚡</div>
-                <div>
-                    <h1 class="text-lg font-bold">Simulateur de Maintenance</h1>
-                    <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Démarrage Direct Moteur Asynchrone</p>
-                </div>
+    <header class="sticky top-0 z-40 border-b bg-white/95 backdrop-blur px-6 py-4 shadow-sm flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="h-10 w-10 bg-blue-700 rounded-lg flex items-center justify-center text-white font-bold shadow-lg">⚡</div>
+            <div>
+                <h1 class="text-lg font-black text-gray-800">Simulateur Pro</h1>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Maintenance Électrique</p>
             </div>
-            <div id="status-moteur" class="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full border">
-                <div id="led-moteur" class="h-3 w-3 rounded-full bg-gray-400"></div>
-                <span class="text-xs font-bold uppercase" id="texte-moteur">Moteur: ARRÊT</span>
-            </div>
+        </div>
+        <div class="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full border">
+            <div id="led-moteur" class="indicator h-3 w-3 rounded-full bg-gray-400"></div>
+            <span class="text-xs font-black uppercase tracking-tighter text-gray-500" id="texte-moteur">Moteur: ARRÊT</span>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-4 lg:p-8">
+    <main class="max-w-7xl mx-auto p-4 lg:p-8 space-y-8">
         
-        <div class="mb-8 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl shadow-sm">
-            <h2 class="font-bold text-blue-800 mb-2 flex items-center gap-2">📖 Instructions de formation</h2>
-            <ul class="text-sm text-blue-700 space-y-2">
-                <li>• <strong>Fermez Q1</strong> (Sectionneur) pour alimenter le circuit de commande.</li>
-                <li>• <strong>Appuyez sur S1</strong> (Bouton Marche) pour activer le contacteur <strong>KM1</strong>.</li>
-                <li>• <strong>S0</strong> (Bouton Arrêt) coupe l'auto-maintien.</li>
-                <li>• En cas de surcharge, le relais <strong>F1</strong> déclenche et coupe tout.</li>
-            </ul>
-        </div>
-
         <div class="grid gap-8 lg:grid-cols-2">
             
-            <section class="bg-white p-6 rounded-2xl border shadow-sm">
-                <h3 class="text-lg font-bold mb-6 border-b pb-2 text-gray-700">Pupitre de Commande</h3>
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="flex flex-col items-center gap-3">
-                        <label class="text-xs font-bold text-gray-500">Q1 (Sectionneur)</label>
-                        <button onclick="toggleQ1()" id="btn-q1" class="w-16 h-16 bg-gray-200 border-4 border-gray-300 rounded-lg font-bold text-xl">OFF</button>
+            <section class="bg-white p-8 rounded-3xl border shadow-xl">
+                <div class="flex items-center justify-between mb-8 border-b pb-4">
+                    <h3 class="text-xl font-extrabold text-gray-800 uppercase tracking-tight">Pupitre de Commande</h3>
+                    <div class="flex items-center gap-2 text-[10px] font-mono px-3 py-1 bg-gray-50 rounded-full border uppercase font-bold text-gray-400">
+                        <span id="led-puissance" class="indicator h-3 w-3 rounded-full bg-gray-300"></span>
+                        Alim 400V
                     </div>
-                    <div class="flex flex-col items-center gap-3">
-                        <label class="text-xs font-bold text-gray-500">F1 (Relais Thermique)</label>
-                        <button onclick="toggleF1()" id="btn-f1" class="w-16 h-16 bg-green-100 border-4 border-green-500 rounded-lg text-green-700 font-bold">OK</button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-8">
+                    <div class="flex flex-col items-center gap-3 bg-gray-50 p-4 rounded-2xl border">
+                        <div class="flex items-center gap-2">
+                            <span id="led-q1" class="indicator h-2.5 w-2.5 rounded-full bg-gray-300"></span>
+                            <label class="text-[10px] font-black text-gray-400 uppercase">Sectionneur Q1</label>
+                        </div>
+                        <button onclick="toggleQ1()" id="btn-q1" class="btn-industrial w-20 h-20 bg-gray-200 border-4 border-gray-300 rounded-xl font-black text-xl text-gray-600">OFF</button>
                     </div>
-                    <div class="flex flex-col items-center gap-3">
-                        <label class="text-xs font-bold text-gray-500 font-bold text-red-600">S0 (Arrêt)</label>
-                        <button onmousedown="pressS0()" onmouseup="releaseS0()" class="w-16 h-16 bg-red-600 rounded-full shadow-lg active:scale-90 transition-transform flex items-center justify-center border-4 border-red-800"></button>
+
+                    <div class="flex flex-col items-center gap-3 bg-gray-50 p-4 rounded-2xl border">
+                        <div class="flex items-center gap-2">
+                            <span id="led-f1" class="indicator h-2.5 w-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#38a169]"></span>
+                            <label class="text-[10px] font-black text-gray-400 uppercase">Thermique F1</label>
+                        </div>
+                        <button onclick="toggleF1()" id="btn-f1" class="btn-industrial w-20 h-20 bg-white border-4 border-green-500 rounded-xl text-green-600 font-bold text-xs">OK</button>
                     </div>
+
                     <div class="flex flex-col items-center gap-3">
-                        <label class="text-xs font-bold text-gray-500 font-bold text-green-600">S1 (Marche)</label>
-                        <button onmousedown="pressS1()" onmouseup="releaseS1()" class="w-16 h-16 bg-green-600 rounded-full shadow-lg active:scale-90 transition-transform flex items-center justify-center border-4 border-green-800"></button>
+                        <label class="text-[10px] font-black text-red-600 uppercase">Arrêt S0 (NC)</label>
+                        <button onmousedown="pressS0()" onmouseup="releaseS0()" class="btn-industrial w-20 h-20 bg-red-600 rounded-full border-8 border-red-800 shadow-lg active:scale-95"></button>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-3">
+                        <label class="text-[10px] font-black text-green-600 uppercase">Marche S1 (NO)</label>
+                        <button onmousedown="pressS1()" onmouseup="releaseS1()" class="btn-industrial w-20 h-20 bg-green-600 rounded-full border-8 border-green-800 shadow-lg active:scale-95"></button>
                     </div>
                 </div>
             </section>
 
-            <section class="bg-white p-6 rounded-2xl border shadow-sm overflow-hidden">
-                <h3 class="text-lg font-bold mb-6 border-b pb-2 text-gray-700">Schéma Électrique de Commande</h3>
-                <div class="relative bg-gray-50 p-4 rounded-lg border border-dashed flex flex-col items-center gap-4 py-10">
-                    <div class="w-full text-center font-mono text-xs font-bold text-gray-400">Ligne L1 (230V)</div>
-                    <div id="wire-q1" class="w-1 h-8 bg-gray-300"></div>
-                    <div id="schem-q1" class="px-4 py-2 border-2 border-gray-400 bg-white font-bold text-xs uppercase">Q1: OUVERT</div>
-                    <div id="wire-f1" class="w-1 h-8 bg-gray-300"></div>
-                    <div id="schem-f1" class="px-4 py-2 border-2 border-gray-400 bg-white font-bold text-xs uppercase">F1: FERMÉ</div>
-                    <div id="wire-km1" class="w-1 h-8 bg-gray-300"></div>
-                    <div id="schem-km1" class="w-24 h-12 border-4 border-gray-800 flex items-center justify-center font-black bg-white transition-colors">KM1</div>
-                    <div class="w-full text-center font-mono text-xs font-bold text-gray-400">Neutre (N)</div>
+            <section class="bg-white p-8 rounded-3xl border shadow-xl schematic-zone">
+                <h3 class="text-xl font-extrabold mb-8 border-b pb-4 text-gray-800 uppercase tracking-tight">Schéma de Commande</h3>
+                <div class="relative flex flex-col items-center gap-1 font-mono text-[11px] font-bold">
+                    <div class="w-full text-center text-gray-400 mb-2">Phase L1 (230V)</div>
+                    <div id="wire-1" class="w-1.5 h-8 bg-gray-300 transition-colors duration-300"></div>
+                    <div id="schem-q1" class="px-6 py-2 border-4 border-gray-400 bg-white rounded-lg">Q1: OUVERT</div>
+                    <div id="wire-2" class="w-1.5 h-8 bg-gray-300 transition-colors duration-300"></div>
+                    <div id="schem-f1" class="px-6 py-2 border-4 border-gray-400 bg-white rounded-lg">F1: FERMÉ</div>
+                    <div id="wire-3" class="w-1.5 h-8 bg-gray-300 transition-colors duration-300"></div>
+                    <div class="flex gap-2 items-center p-3 border-2 border-dashed rounded-lg bg-gray-50">
+                        <div id="schem-s0" class="px-3 py-1 border-2 border-red-300 text-red-600 bg-white">S0</div>
+                        <div class="text-gray-300">+</div>
+                        <div id="schem-s1" class="px-3 py-1 border-2 border-green-300 text-green-600 bg-white">S1</div>
+                    </div>
+                    <div id="wire-4" class="w-1.5 h-8 bg-gray-300 transition-colors duration-300"></div>
+                    <div id="schem-km1" class="w-32 h-16 border-8 border-gray-800 flex items-center justify-center font-black rounded-xl transition-all duration-300">KM1</div>
+                    <div id="wire-5" class="w-1.5 h-8 bg-gray-300 transition-colors duration-300"></div>
+                    <div class="w-full text-center text-gray-400 mt-2">Neutre N</div>
                 </div>
             </section>
+        </div>
+
+        <div class="bg-blue-900 text-blue-100 p-6 rounded-3xl shadow-lg">
+            <h4 class="font-black uppercase text-xs tracking-widest mb-4 flex items-center gap-2">
+                <span class="text-yellow-400">💡</span> Rappel de Maintenance
+            </h4>
+            <div class="grid md:grid-cols-2 gap-6 text-xs leading-relaxed opacity-90">
+                <p>• L'<strong>auto-maintien</strong> est assuré par le contact auxiliaire de KM1 (13-14) monté en parallèle sur S1.</p>
+                <p>• Le <strong>relais thermique F1</strong> surveille l'intensité absorbée par le moteur pour éviter l'échauffement.</p>
+            </div>
         </div>
     </main>
 
     <script>
-        // Logique du circuit
         let q1Closed = false;
         let f1Tripped = false;
         let km1Energized = false;
@@ -92,44 +144,63 @@
         let s0Pressed = false;
 
         function updateUI() {
-            // Logique de l'auto-maintien KM1
-            // Condition: Q1 fermé ET F1 OK ET (S1 appuyé OU KM1 déjà activé) ET S0 non appuyé
+            // Logique de maintenance
             if (q1Closed && !f1Tripped && (s1Pressed || km1Energized) && !s0Pressed) {
                 km1Energized = true;
             } else {
                 km1Energized = false;
             }
 
-            // Mise à jour visuelle Moteur
-            const led = document.getElementById('led-moteur');
-            const texte = document.getElementById('texte-moteur');
-            const km1Box = document.getElementById('schem-km1');
+            // Mise à jour État Moteur
+            const ledMoteur = document.getElementById('led-moteur');
+            const texteMoteur = document.getElementById('texte-moteur');
+            const ledPuissance = document.getElementById('led-puissance');
 
             if (km1Energized) {
-                led.className = "h-3 w-3 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_#22c55e]";
-                texte.innerText = "Moteur: EN MARCHE";
-                texte.className = "text-xs font-black text-green-600";
-                km1Box.classList.add('bg-green-500', 'text-white');
+                ledMoteur.className = "indicator h-3 w-3 rounded-full bg-green-500 shadow-[0_0_15px_#22c55e]";
+                texteMoteur.innerText = "Moteur: EN MARCHE";
+                texteMoteur.className = "text-xs font-black text-green-600";
+                ledPuissance.className = "indicator h-3 w-3 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]";
             } else {
-                led.className = "h-3 w-3 rounded-full bg-gray-400";
-                texte.innerText = "Moteur: ARRÊT";
-                texte.className = "text-xs font-bold text-gray-500";
-                km1Box.classList.remove('bg-green-500', 'text-white');
+                ledMoteur.className = "indicator h-3 w-3 rounded-full bg-gray-400";
+                texteMoteur.innerText = "Moteur: ARRÊT";
+                texteMoteur.className = "text-xs font-black text-gray-400";
+                ledPuissance.className = "indicator h-3 w-3 rounded-full bg-gray-300";
             }
 
-            // Mise à jour Bouton Q1
+            // Bouton Q1
             const btnQ1 = document.getElementById('btn-q1');
+            const ledQ1 = document.getElementById('led-q1');
             btnQ1.innerText = q1Closed ? "ON" : "OFF";
-            btnQ1.className = q1Closed ? "w-16 h-16 bg-blue-600 text-white rounded-lg font-bold border-4 border-blue-900" : "w-16 h-16 bg-gray-200 border-4 border-gray-300 rounded-lg font-bold";
-            document.getElementById('schem-q1').innerText = q1Closed ? "Q1: FERMÉ" : "Q1: OUVERT";
-            document.getElementById('schem-q1').className = q1Closed ? "px-4 py-2 border-2 border-green-500 bg-white font-bold text-xs uppercase text-green-600" : "px-4 py-2 border-2 border-gray-400 bg-white font-bold text-xs uppercase";
+            btnQ1.className = q1Closed ? "btn-industrial w-20 h-20 bg-green-600 text-white rounded-xl font-black text-xl border-4 border-green-800" : "btn-industrial w-20 h-20 bg-gray-200 border-4 border-gray-300 rounded-xl font-black text-xl text-gray-600";
+            ledQ1.className = q1Closed ? "indicator h-2.5 w-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]" : "indicator h-2.5 w-2.5 rounded-full bg-gray-300";
 
-            // Mise à jour Bouton F1
+            // Bouton F1
             const btnF1 = document.getElementById('btn-f1');
+            const ledF1 = document.getElementById('led-f1');
             btnF1.innerText = f1Tripped ? "DÉFAUT" : "OK";
-            btnF1.className = f1Tripped ? "w-16 h-16 bg-red-100 border-4 border-red-500 rounded-lg text-red-600 font-bold animate-bounce" : "w-16 h-16 bg-green-100 border-4 border-green-500 rounded-lg text-green-700 font-bold";
-            document.getElementById('schem-f1').innerText = f1Tripped ? "F1: DÉCLENCHÉ" : "F1: FERMÉ (OK)";
-            document.getElementById('schem-f1').className = f1Tripped ? "px-4 py-2 border-2 border-red-500 bg-white font-bold text-xs uppercase text-red-600" : "px-4 py-2 border-2 border-gray-400 bg-white font-bold text-xs uppercase";
+            btnF1.className = f1Tripped ? "btn-industrial w-20 h-20 bg-red-100 border-4 border-red-500 rounded-xl text-red-600 font-bold text-xs animate-pulse" : "btn-industrial w-20 h-20 bg-white border-4 border-green-500 rounded-xl text-green-600 font-bold text-xs";
+            ledF1.className = f1Tripped ? "indicator h-2.5 w-2.5 rounded-full bg-red-600 shadow-[0_0_8px_#ef4444]" : "indicator h-2.5 w-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]";
+
+            // Schéma Dynamique
+            const wires = ['wire-1', 'wire-2', 'wire-3', 'wire-4', 'wire-5'];
+            const schemKm1 = document.getElementById('schem-km1');
+
+            if (km1Energized) {
+                schemKm1.className = "w-32 h-16 border-8 border-green-600 flex items-center justify-center font-black bg-green-600 text-white rounded-xl shadow-lg";
+                wires.forEach(id => document.getElementById(id).classList.replace('bg-gray-300', 'bg-green-500'));
+                document.getElementById('schem-q1').className = "px-6 py-2 border-4 border-green-500 bg-white rounded-lg text-green-600 font-black";
+                document.getElementById('schem-f1').className = "px-6 py-2 border-4 border-green-500 bg-white rounded-lg text-green-600 font-black";
+            } else {
+                schemKm1.className = "w-32 h-16 border-8 border-gray-800 flex items-center justify-center font-black bg-white rounded-xl";
+                wires.forEach(id => document.getElementById(id).className = "w-1.5 h-8 bg-gray-300 transition-colors duration-300");
+                document.getElementById('schem-q1').className = "px-6 py-2 border-4 border-gray-400 bg-white rounded-lg text-gray-400 font-black";
+                document.getElementById('schem-f1').className = "px-6 py-2 border-4 border-gray-400 bg-white rounded-lg text-gray-400 font-black";
+            }
+            
+            if(f1Tripped) {
+                document.getElementById('schem-f1').className = "px-6 py-2 border-4 border-red-500 bg-white rounded-lg text-red-600 font-black animate-bounce";
+            }
         }
 
         function toggleQ1() { q1Closed = !q1Closed; updateUI(); }
