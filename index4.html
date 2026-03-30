@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SimuMaintenix V2 | Simulateur de Maintenance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Ubuntu+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: #f4f7f6; padding-bottom: 70px; }
+        .navbar-brand { font-weight: 700; letter-spacing: 1px; }
+        .simulator-container { background: #fff; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); padding: 15px; margin-top: 10px; }
+        .status-panel { background: #1e1e1e; color: #dfe6e9; border-radius: 8px; padding: 10px; font-family: 'Ubuntu Mono', monospace; font-size: 0.8rem; }
+        
+        /* Styles pour le schéma SVG */
+        #simulation-screen { background: #fff; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; position: relative;}
+        .schematic-svg { width: 100%; height: auto; display: block; }
+        .wiring { stroke: #333; stroke-width: 2; fill: none; }
+        .component-label { font-size: 12px; font-family: 'Ubuntu Mono', monospace; fill: #555; font-weight: bold; }
+        
+        /* Points de test cliquables */
+        .test-point { fill: #dc3545; stroke: white; stroke-width: 1.5; cursor: crosshair; opacity: 0; transition: opacity 0.2s; }
+        .test-point:hover { opacity: 1; r: 6; } /* S'affiche au survol */
+        .test-point.active { opacity: 1; fill: #ffc107; r: 6; } /* Point sélectionné */
+
+        /* Boîte à outils */
+        .tool-btn.active { background-color: #0d6efd !important; color: white !important; border-color: #0a58ca !important;}
+        
+        footer { background: #2d3436; color: white; padding: 15px 0; position: fixed; bottom: 0; width: 100%; font-size: 0.8rem;}
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-dark bg-dark shadow-sm py-1">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="fas fa-tools me-2"></i>SIMUMAINTENIX <span class="badge bg-primary fs-8">V2</span></a>
+        </div>
+    </nav>
+
+    <main class="container-fluid p-2">
+        <div class="simulator-container">
+            
+            <div class="row align-items-center g-1 mb-2">
+                <div class="col-8">
+                    <h6 class="mb-0"><i class="fas fa-industry me-1 text-primary"></i>Démarrage Moteur (Pompe P1)</h6>
+                </div>
+                <div class="col-4 text-end">
+                    <button class="btn btn-danger btn-sm" id="btn-emergency" title="Arrêt d'Urgence">
+                        <i class="fas fa-stop-circle"></i> AU
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-2">
+                <div class="col-12 col-lg-7">
+                    <div id="simulation-screen" class="p-1">
+                        <svg viewBox="0 0 300 400" class="schematic-svg" xmlns="http://www.w3.org/2000/svg">
+                            
+                            <text x="150" y="20" text-anchor="middle" class="component-label" style="font-size:14px;">Puissance - 400V AC</text>
+                            
+                            <line x1="100" y1="50" x2="200" y2="50" class="wiring" />
+                            <text x="90" y="55" class="component-label">L1</text>
+                            <text x="210" y="55" class="component-label">L3</text>
+                            <circle cx="150" cy="50" r="3" fill="#333" />
+                            <text x="155" y="45" class="component-label">L2</text>
+
+                            <g id="Q1_comp">
+                                <line x1="150" y1="50" x2="150" y2="80" class="wiring" />
+                                <rect x="135" y="80" width="30" height="40" rx="2" class="wiring" style="fill:white;"/>
+                                <line x1="140" y1="90" x2="160" y2="110" class="wiring" />
+                                <text x="175" y="105" class="component-label">Q1</text>
+                                <circle cx="150" cy="120" r="4" class="test-point" data-point="Q1_out" title="Point de test Q1 sortie" />
+                            </g>
+
+                            <g id="KM1_comp">
+                                <line x1="150" y1="120" x2="150" y2="160" class="wiring" />
+                                <rect x="135" y="160" width="30" height="40" rx="2" class="wiring" style="fill:white;"/>
+                                <line x1="135" y1="180" x2="165" y2="180" class="wiring" stroke-dasharray="3,3"/>
+                                <text x="175" y="185" class="component-label">KM1</text>
+                                <circle cx="150" cy="200" r="4" class="test-point" data-point="KM1_out" title="Point de test KM1 sortie" />
+                            </g>
+
+                            <g id="F1_comp">
+                                <line x1="150" y1="200" x2="150" y2="240" class="wiring" />
+                                <polygon points="135,240 165,240 150,265" class="wiring" style="fill:white;"/>
+                                <text x="175" y="255" class="component-label">F1</text>
+                                <circle cx="150" cy="265" r="4" class="test-point" data-point="F1_out" title="Point de test F1 sortie" />
+                            </g>
+
+                            <g id="M1_comp">
+                                <line x1="150" y1="265" x2="150" y2="300" class="wiring" />
+                                <circle cx="150" cy="330" r="30" class="wiring" style="fill:#e9ecef;"/>
+                                <text x="150" y="335" text-anchor="middle" class="component-label" style="font-size:16px;">M1</text>
+                                <text x="150" y="350" text-anchor="middle" class="component-label" style="font-size:10px;">3~</text>
+                                <circle cx="150" cy="330" r="4" class="test-point" data-point="M1_motor" title="Point de test bornier Moteur" />
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-5">
+                    <div class="status-panel mb-2">
+                        <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-1 mb-1">
+                            <h7 class="m-0"><i class="fas fa-terminal me-1"></i>Moniteur</h7>
+                            <span class="badge bg-success" id="sys-status">OK</span>
+                        </div>
+                        <div id="console-logs" style="height: 120px; overflow-y: auto;">
+                            <div class="text-success">[OK] Système alimenté (400V).</div>
+                            <div class="text-info">[INFO] Prêt pour diagnostic.</div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-light shadow-sm">
+                        <div class="card-body p-2">
+                            <h7 class="card-title d-block mb-2">Outils de mesure</h7>
+                            <div class="row g-1 mb-2">
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-dark btn-sm w-100 tool-btn active" id="tool-multimeter" data-tool="volt">
+                                        <i class="fas fa-plug me-1"></i>Voltmètre
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-outline-dark btn-sm w-100 tool-btn" id="tool-clamp" data-tool="amp">
+                                        <i class="fas fa-circle-notch me-1"></i>Pince Amp.
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="text-center bg-dark text-white rounded p-2">
+                                <span class="fw-bold" style="font-family: 'Ubuntu Mono', monospace; font-size: 1.2rem;">
+                                    <span id="measure-value">0.0</span> <span id="measure-unit">V</span>
+                                </span>
+                            </div>
+                            <small class="text-muted d-block text-center mt-1">Cliquez sur un point rouge <span style="color:#dc3545">●</span> du schéma.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="text-center">
+        <div class="container-fluid">
+            <p class="mb-0">&copy; 2026 SimuMaintenix - Formation Technique Mobile</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // --- Éléments UI ---
+        const consoleLogs = document.getElementById('console-logs');
+        const measureValue = document.getElementById('measure-value');
+        const measureUnit = document.getElementById('measure-unit');
+        const sysStatus = document.getElementById('sys-status');
+        const toolButtons = document.querySelectorAll('.tool-btn');
+        const testPoints = document.querySelectorAll('.test-point');
+
+        // --- État du Système ---
+        let currentTool = 'volt'; // ou 'amp'
+        let isEmergency = false;
+        let isMotorRunning = false; // Par défaut arrêté
+
+        // --- Données de simulation des points de mesure ---
+        // Définit la tension (V) et l'intensité (A) attendues à chaque point
+        const simulationData = {
+            'Q1_out':   { volt: 402, amp: 0 },
+            'KM1_out':  { volt: 0,   amp: 0 }, // Contacteur ouvert
+            'F1_out':   { volt: 0,   amp: 0 },
+            'M1_motor': { volt: 0,   amp: 0 }
+        };
+
+        // --- Fonctions Utilitaires ---
+        function addLog(message, type = 'info') {
+            const log = document.createElement('div');
+            const time = new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+            log.className = type === 'error' ? 'text-danger' : (type === 'success' ? 'text-success' : 'text-info');
+            log.innerHTML = `<span class="text-muted">[${time}]</span> ${message}`;
+            consoleLogs.prepend(log);
+        }
+
+        function updateMeasurement(value, unit) {
+            // Ajoute une légère variation aléatoire pour le réalisme
+            const noise = (Math.random() - 0.5) * (value * 0.01);
+            measureValue.innerText = (value + noise).toFixed(currentTool === 'volt' ? 1 : 2);
+            measureUnit.innerText = unit;
+        }
+
+        // --- Gestionnaires d'Événements ---
+
+        // 1. Sélection de l'outil
+        toolButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // UI update
+                toolButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTool = btn.dataset.tool;
+                
+                // Reset de la mesure affichée
+                measureValue.innerText = "0.0";
+                measureUnit.innerText = currentTool === 'volt' ? 'V' : 'A';
+                addLog(`Outil sélectionné : ${currentTool === 'volt' ? 'Voltmètre' : 'Pince Ampèremétrique'}`);
+            });
+        });
+
+        // 2. Clic sur un point de test
+        testPoints.forEach(point => {
+            point.addEventListener('click', (e) => {
+                const pointId = point.dataset.point;
+                const pointTitle = point.getAttribute('title');
+
+                // UI update (activation visuelle du point)
+                testPoints.forEach(p => p.classList.remove('active'));
+                point.classList.add('active');
+
+                if (isEmergency) {
+                    addLog('Mesure impossible : Arrêt d\'urgence activé (Puissance coupée).', 'error');
+                    updateMeasurement(0, currentTool === 'volt' ? 'V' : 'A');
+                    return;
+                }
+
+                // Récupération des données simulées
+                if (simulationData[pointId]) {
+                    const data = simulationData[pointId][currentTool];
+                    const unit = currentTool === 'volt' ? 'V' : 'A';
+                    
+                    updateMeasurement(data, unit);
+                    addLog(`Mesure sur ${pointTitle} : ${data} ${unit}`, 'success');
+                }
+            });
+        });
+
+        // 3. Arrêt d'Urgence
+        document.getElementById('btn-emergency').addEventListener('click', () => {
+            isEmergency = true;
+            sysStatus.innerText = "AU";
+            sysStatus.className = "badge bg-danger";
+            addLog('ALERTE : Arrêt d\'urgence activé ! Puissance de puissance coupée.', 'error');
+            measureValue.innerText = "0.0";
+            
+            // Simulation : On coupe tout au démarrage
+            // (Dans une V3, on pourrait simuler l'ouverture de KM1)
+        });
+
+    </script>
+</body>
+</html>
