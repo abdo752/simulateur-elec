@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SimuMaintenix Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #eceff1; font-size: 14px; }
+        .card-simu { border-radius: 15px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .schematic-box { 
+            background: white; 
+            border: 2px solid #dee2e6; 
+            border-radius: 10px; 
+            height: 320px; /* Hauteur fixe pour éviter les débordements */
+            display: flex;
+            justify-content: center;
+        }
+        .status-terminal { 
+            background: #263238; 
+            color: #80cbc4; 
+            font-family: monospace; 
+            padding: 10px; 
+            border-radius: 8px;
+            font-size: 12px;
+            height: 100px;
+            overflow-y: auto;
+        }
+        .test-point { fill: #f44336; opacity: 0.6; cursor: pointer; }
+        .test-point:active { fill: #ffeb3b; opacity: 1; r: 8; }
+        .component-text { font-size: 14px; font-weight: bold; fill: #37474f; }
+    </style>
+</head>
+<body class="p-2">
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="m-0 text-primary fw-bold"><i class="fas fa-bolt"></i> SimuMaintenix</h5>
+        <button class="btn btn-danger btn-sm fw-bold" id="au-btn">ARRÊT D'URGENCE</button>
+    </div>
+
+    <div class="card card-simu p-3 mb-2">
+        <div class="schematic-box">
+            <svg viewBox="0 0 200 300" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <line x1="100" y1="20" x2="100" y2="280" stroke="#37474f" stroke-width="3" />
+                
+                <rect x="80" y="50" width="40" height="40" fill="white" stroke="#37474f" stroke-width="2"/>
+                <line x1="85" y1="60" x2="115" y2="80" stroke="#37474f" stroke-width="2"/>
+                <text x="130" y="75" class="component-text">Q1</text>
+                <circle cx="100" cy="95" r="6" class="test-point" onclick="mesurer(400)"/>
+
+                <rect x="80" y="120" width="40" height="40" fill="white" stroke="#37474f" stroke-width="2"/>
+                <line x1="80" y1="140" x2="120" y2="140" stroke="#37474f" stroke-width="2" stroke-dasharray="4"/>
+                <text x="130" y="145" class="component-text">KM1</text>
+                <circle cx="100" cy="165" r="6" class="test-point" onclick="mesurer(0)"/>
+
+                <path d="M 80 200 L 120 200 L 100 230 Z" fill="white" stroke="#37474f" stroke-width="2"/>
+                <text x="130" y="220" class="component-text">F1</text>
+                <circle cx="100" cy="235" r="6" class="test-point" onclick="mesurer(0)"/>
+
+                <circle cx="100" cy="270" r="25" fill="#cfd8dc" stroke="#37474f" stroke-width="2"/>
+                <text x="100" y="275" text-anchor="middle" class="component-text">M1</text>
+            </svg>
+        </div>
+    </div>
+
+    <div class="row g-2">
+        <div class="col-12">
+            <div class="status-terminal" id="logs">
+                [SYSTEM] Prêt pour le test...<br>
+                [INFO] Touchez les points rouges pour mesurer.
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="bg-dark text-warning p-2 rounded text-center shadow">
+                <span style="font-size: 0.8rem; display: block; color: #90a4ae;">MESURE VOLTMÈTRE</span>
+                <span id="display" class="fw-bold fs-3">0.00 V</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const display = document.getElementById('display');
+    const logs = document.getElementById('logs');
+    let isAU = false;
+
+    function mesurer(val) {
+        if(isAU) {
+            display.innerText = "0.00 V";
+            logs.innerHTML = "<span class='text-danger'>[!] ERREUR: Coupure AU active</span><br>" + logs.innerHTML;
+            return;
+        }
+        display.innerText = val + ".0 V";
+        logs.innerHTML = "[OK] Mesure effectuée à " + val + "V<br>" + logs.innerHTML;
+    }
+
+    document.getElementById('au-btn').addEventListener('click', () => {
+        isAU = true;
+        display.innerText = "0.00 V";
+        logs.innerHTML = "<span class='text-danger'>[!] ARRÊT D'URGENCE ACTIVÉ</span><br>" + logs.innerHTML;
+        document.getElementById('au-btn').classList.replace('btn-danger', 'btn-secondary');
+    });
+</script>
+
+</body>
+</html>
